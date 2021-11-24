@@ -1,0 +1,10 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<h1>targeted ads</h1>
+{% for user in users.data%}
+    <p>{{ user.name}} - {{user.username}}</p>
+{% endfor%}
+
+{% endblock %}

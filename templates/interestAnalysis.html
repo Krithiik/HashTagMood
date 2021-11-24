@@ -1,0 +1,9 @@
+{% extends 'main.html' %} {% block content %}
+
+<p>Interest analysis</p>
+{% for liked in favourite %}
+<!-- {% for key,value in liked.items %}
+        <li>{{key}} - {{value}}</li>
+    {% endfor %} -->
+<p>{{liked}}</p>
+{% endfor %} {% endblock %}

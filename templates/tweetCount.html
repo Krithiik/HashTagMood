@@ -1,0 +1,63 @@
+{% extends 'main.html' %} {% block content %}
+<p>{{ tweetData }}</p>
+<div id="container" style="width: 75%">
+  <canvas id="chart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+<script>
+    var data = {{tweetData|safe}}
+    var labels = data.map(function(e) {
+       return e.end;
+      });
+    var data = data.map(function(e) {
+       return e.count;
+      });;
+    const config = {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label:"count",
+        data: data,
+        backgroundColor: "#72efdd",
+        borderColor: "#4ea8de",
+      }]
+    },
+    options: {
+      plugins: {
+        title: {
+          text: 'Tweet-count in a week',
+          display: true
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: 'day'
+          },
+          title: {
+            display: true,
+            text: 'Date'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Count'
+          }
+        }
+      },
+    },
+  };
+   window.onload = function(){
+      var canvas = document.getElementById("chart");
+      var ctx = canvas.getContext('2d');
+      var myBarChart = new Chart(ctx, config);
+  };
+</script>
+
+{% endblock %}
