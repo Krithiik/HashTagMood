@@ -1,0 +1,37 @@
+.jumbotron {
+  overflow: hidden;
+  width: 100%;
+  height: 350px;
+  color: #264653;
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0.35)
+    ),
+    url("/static/images/beamer.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.blurb h2 {
+  color: black;
+  font-weight: 100;
+  font-size: 2.5rem;
+}
+
+.blurb p {
+  color: black;
+  font-weight: 100;
+  font-size: 1.125rem;
+  line-height: 2;
+}
+
+/* .content {
+  margin-top: 100px;
+  margin-bottom: 100px;
+  width: 100%;
+} */
+
+.form-container {
+  width: 400px;
+}

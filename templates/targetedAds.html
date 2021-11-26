@@ -1,10 +1,81 @@
-{% extends 'main.html' %}
+{% extends 'main.html' %} {% block content %}
 
-{% block content %}
+<div
+  class="
+    mt-5
+    w-100
+    container-fluid
+    d-flex
+    justify-content-center
+    align-items-center
+    flex-column
+  "
+>
+  <h1>Targeted Advertisement</h1>
+  {% if error%}
+  <p>😞{{error}}</p>
+  {%endif%}
+  <form action="" method="POST" class="needs-validation" novalidate autocomplete="off">
+    {% csrf_token %}
+    <label for="username" class="form-label"
+      >Username of the bussiness twitter account</label
+    >
+    <div class="input-group has-validation">
+      <span class="input-group-text" id="inputGroupPrepend">@</span>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        class="form-control"
+        aria-describedby="inputGroupPrepend"
+        required
+      />
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+  </form>
+</div>
+{%if targetUsers %}
+<div class="mt-5 d-flex justify-content-center align-items-center">
+<table class="table table-light table-bordered w-50">
+    <thead>
+      <tr>
+        <th scope="col">Username</th>
+        <th scope="col">Account link</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in targetUsers%}
+      <tr>
+        <td>{{user}}</td>
+        <td ><a href="https://twitter.com/{{user}}">see account</a</td>
+      </tr>
+      {% endfor %} 
+    </tbody>
+</table>
+</div>
+{%endif%}
+<script>
+  (function () {
+    "use strict";
 
-<h1>targeted ads</h1>
-{% for user in users.data%}
-    <p>{{ user.name}} - {{user.username}}</p>
-{% endfor%}
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.querySelectorAll(".needs-validation");
 
+    // Loop over them and prevent submission
+    Array.prototype.slice.call(forms).forEach(function (form) {
+      form.addEventListener(
+        "submit",
+        function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+
+          form.classList.add("was-validated");
+        },
+        false
+      );
+    });
+  })();
+</script>
 {% endblock %}

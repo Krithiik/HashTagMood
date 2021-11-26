@@ -1,18 +1,17 @@
-{% extends 'main.html' %} {% block content %}
-<p>{{ tweetData }}</p>
-<div id="container" style="width: 75%">
-  <canvas id="chart"></canvas>
+<div class="container">
+  <h1 class="mt-4">Tweet Count</h1>
+  <h3>The trend in tweet count for last 7 days</h3>
+  <div id="container" class="mx-auto">
+    <canvas id="chart"></canvas>
+  </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
 <script>
-    var data = {{tweetData|safe}}
-    var labels = data.map(function(e) {
+    var Countdata = {{tweetCountData|safe}}
+    var labels = Countdata.map(function(e) {
        return e.end;
       });
-    var data = data.map(function(e) {
+    var Countdata = Countdata.map(function(e) {
        return e.count;
       });;
     const config = {
@@ -21,9 +20,9 @@
       labels: labels,
       datasets: [{
         label:"count",
-        data: data,
-        backgroundColor: "#72efdd",
-        borderColor: "#4ea8de",
+        data: Countdata,
+        backgroundColor: "#90caf9",
+        borderColor: "#64b5f6",
       }]
     },
     options: {
@@ -53,11 +52,6 @@
       },
     },
   };
-   window.onload = function(){
-      var canvas = document.getElementById("chart");
-      var ctx = canvas.getContext('2d');
-      var myBarChart = new Chart(ctx, config);
-  };
+
 </script>
 
-{% endblock %}

@@ -1,0 +1,15 @@
+.unavailContainer {
+  width: 100%;
+  height: 92vh;
+  background-image: url("/static/Images/unavailable.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+  overflow: hidden;
+}
+
+.textblock {
+  position: absolute;
+  top: 40%;
+  left: 40%;
+}

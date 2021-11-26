@@ -1,9 +1,48 @@
 {% extends 'main.html' %} {% block content %}
 
-<p>Interest analysis</p>
-{% for liked in favourite %}
-<!-- {% for key,value in liked.items %}
-        <li>{{key}} - {{value}}</li>
-    {% endfor %} -->
-<p>{{liked}}</p>
-{% endfor %} {% endblock %}
+<div
+  class="
+    mt-5
+    w-100
+    container-fluid
+    d-flex
+    justify-content-center
+    align-items-center
+    flex-column
+  "
+>
+  <h1>Interest Analysis</h1>
+  {% if error%}
+  <p>😞{{error}}</p>
+  {%endif%}
+  <form action="" method="POST" class="needs-validation" novalidate autocomplete="off">
+    {% csrf_token %}
+    <label for="username" class="form-label"
+      >Username of the twitter account</label
+    >
+    <div class="input-group has-validation">
+      <span class="input-group-text" id="inputGroupPrepend">@</span>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        class="form-control"
+        aria-describedby="inputGroupPrepend"
+        required
+      />
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+  </form>
+</div>
+{%if favourite%}
+<div class="mt-5 mb-5 d-flex justify-content-center align-items-center">
+    <div class="overflow-auto p-3" style="width:50%; height:500px; border: solid black 2px">
+        {%for tag in favourite%}
+            <span>{{tag}}, </span>
+        {%endfor%}
+    </div>
+</div>
+{%endif%}
+
+
+{% endblock %}

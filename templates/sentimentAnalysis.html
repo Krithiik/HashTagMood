@@ -1,48 +1,57 @@
-{% extends 'main.html' %} {% block content %}
-<p>{{datalist}}</p>
-<h1>sentiment analysis</h1>
-{% for k , v in data.items%}
-<p>{{k}} - {{v}}</p>
-{% endfor%}
-<div id="container" style="width: 75%">
-  <canvas id="pie-chart"></canvas>
-</div>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static '/css/sentimentAnalysis.css'%}" />
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+<div class="container">
+    <h1>Sentiment Analysis</h1>
+    <div class="pieContainer mx-auto">
+        <canvas id="pie-chart"></canvas>
+    </div> 
+</div>
 <script>
 
   var data = {
-      labels: ["Positive", "weakly Positive","Strongly Positive" ,  "Negative" ,"Weakly Negative" , "Strongly Negative", "Neutral"],
+      labels: ["Positive", "Weakly Positive","Strongly Positive" ,  "Negative" ,"Weakly Negative" , "Strongly Negative", "Neutral"],
       datasets: [
           {
               fill: true,
               backgroundColor: [
-                  'red', 'blue','yellow','green','orange','pink','purple'
+                  '#2a9d8f', '#264653','#e9c46a','#f4a261','#e76f51','#4895ef','#abc4ff'
               ],
-
-              data: {{datalist}},
+              data: {{sentimentData.datalist}},
           }
       ]
   }
-  console.log(data.datasets[0].data)
 
   var options = {
-      title: {
+      plugins: {
+        title: {
           display: true,
           text: "Sentiment Analysis",
-          postion: 'top'
-      },
-      rotation: -0.7 * Math.PI
+          position: 'top'
+        },
+        tooltip: {
+            callbacks: {
+                label: function(tooltipItem, data) {
+                    console.log(tooltipItem)
+                    return tooltipItem.label + " : " + tooltipItem.formattedValue + "%";
+                }
+             }
+        }
+      }
+
   }
   window.onload = function(){
-      var canvas = document.getElementById("pie-chart");
-      var ctx = canvas.getContext('2d');
-      var myBarChart = new Chart(ctx, {
+      var canvasPie = document.getElementById("pie-chart");
+      var ctxPie = canvasPie.getContext('2d');
+      var canvasChart = document.getElementById("chart");
+      var ctxChart = canvasChart.getContext('2d');
+      var myTimeChart = new Chart(ctxChart, config);
+      var myPieChart = new Chart(ctxPie, {
           type: 'pie',
           data: data,
           options: options
       });
   };
 </script>
+</div>
 
-{% endblock %}

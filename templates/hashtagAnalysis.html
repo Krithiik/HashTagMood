@@ -1,45 +1,43 @@
-{% extends 'main.html' %} {% block content %}
-
-<h1>hashtagAnalysis</h1>
-<table>
-  <thead>
-    <tr>
-      <th>Tweets</th>
-      <th>User_name</th>
-      <th>User_id</th>
-      <th>User_statuses_count</th>
-      <th>user_followers</th>
-      <th>User_location</th>
-      <th>User_verified</th>
-      <th>fav_count</th>
-      <th>rt_count</th>
-      <th>tweet_date</th>
-      <th>url</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- jinja2 Technique -->
-    {% if d %} {% for i in d %}
-    <tr>
-      <td>{{i.Tweets}}</td>
-      <td>{{i.User_name}}</td>
-      <td>{{i.User_id}}</td>
-      <td>{{i.User_statuses_count}}</td>
-      <td>{{i.user_followers}}</td>
-      <td>{{i.User_location}}</td>
-      <td>{{i.User_verified}}</td>
-      <td>{{i.fav_count}}</td>
-      <td>{{i.rt_count}}</td>
-      <td>{{i.tweet_date}}</td>
-      {% if i.url == "not-available"%}
-      <td>{{i.url}}</td>
-      {% else %}
-      <td><a href="{{i.url}}">{{i.url}}</a></td>
-      {% endif %}
-    </tr>
-    {% endfor %} {% endif %}
-  </tbody>
-</table>
-<a href="../downloadFile" download>download </a>
-
-{% endblock %}
+<div class="container mx-auto overflow-auto">
+  <h1>Hashtag Analysis</h1>
+  <h4> The most popular and recent tweet on the topic </h4>
+  {% if tweetData|length > 0%}
+  <button class="btn btn-primary my-2"><a  href="../downloadFile" download style="text-decoration: none; color: white">Download as Excel</a></button>
+  <table class="table table-light table-bordered ">
+    <thead>
+      <tr>
+        <th scope="col">Tweet</th>
+        <th scope="col">User_name</th>
+        <th scope="col">User_id</th>
+        <th scope="col">User_followers</th>
+        <th scope="col">User_location</th>
+        <th scope="col">Like_count</th>
+        <th scope="col">Retweet_count</th>
+        <th scope="col">Tweet_date</th>
+        <th scope="col">Url</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in tweetData %}
+      <tr>
+        <td>{{i.Tweets}}</td>
+        <td >{{i.User_name}}</td>
+        <td>{{i.User_id}}</td>
+        <td>{{i.user_followers}}</td>
+        <td>{{i.User_location}}</td>
+        <td>{{i.fav_count}}</td>
+        <td>{{i.rt_count}}</td>
+        <td>{{i.tweet_date}}</td>
+        {% if i.url == "not-available"%}
+        <td>{{i.url}}</td>
+        {% else %}
+        <td><a href="{{i.url}}">{{i.url}}</a></td>
+        {% endif %}
+      </tr>
+      {% endfor %} 
+    </tbody>
+  </table>
+  {% else %}
+      <h2> Looks like there are no recent tweets on this hashtag / keyword 🤖</h2>
+  {%endif%}
+</div>

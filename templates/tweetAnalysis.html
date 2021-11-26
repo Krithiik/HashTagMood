@@ -1,0 +1,19 @@
+{% extends 'main.html' %} {% block content %} {% load static %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{% static '/css/tweetAnalysis.css'%}"
+/>
+{% if tweetData|length > 0%} 
+{% include "tweetCount.html" with tweetCountData=tweetCountData %} 
+{% include "hashtagAnalysis.html" with tweetData=tweetData %}
+{% include "sentimentAnalysis.html" with sentimentData=sentimentData %} 
+{% else %}
+<div class="unavailContainer">
+  <div class="container-fluid textblock">
+    <h2>
+      Looks like there are no recent tweets <br />on this hashtag / keyword 🤖
+    </h2>
+  </div>
+</div>
+{%endif%} {%endblock%}

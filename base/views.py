@@ -1,19 +1,23 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import HttpResponse
-# Create your views here.
-
 import numpy as np
 import pandas as pd
+from collections import Counter
+from collections import OrderedDict
 import tweepy
 import json
 from tweepy import OAuthHandler
 from textblob import TextBlob
 import re
 import xlwt
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize, sent_tokenize
 from django.utils.encoding import smart_str
 from django.http import HttpResponse
 from django.conf import settings
 
+#Retrieve Keys and Tokens from .env
 API_KEY = settings.API_KEY
 API_KEY_SECRET = settings.API_KEY_SECRET
 BEARER_TOKEN = settings.BEARER_TOKEN
@@ -21,49 +25,57 @@ ACCESS_TOKEN = settings.ACCESS_TOKEN
 ACCESS_TOKEN_SECRET = settings.ACCESS_TOKEN_SECRET
 NO_OF_TERMS = settings.NO_OF_TERMS
 
-
-
-query = "covid"
-
+# Authentication
 auth = tweepy.OAuthHandler( API_KEY , API_KEY_SECRET )
 auth.set_access_token( ACCESS_TOKEN , ACCESS_TOKEN_SECRET )
 api1 = tweepy.API(auth)
-
 api2 = tweepy.Client(bearer_token= BEARER_TOKEN)
+
+#Global Variables
+Filedata = []
+
 
 def home(request):
     return render(request,'home.html')
 
-def hashtagForm(request):
-    return render(request,"hashtagForm.html")
 
-def tweetCount(request):
+#All Tweet Analysis based on Hashtag
+
+def tweetAnalysis(request):
+    if request.method == 'POST':
+        query = request.POST['hashtag']
+        request.session['hashtagQuery'] = query
+    elif 'hashtagQuery' in request.session and request.method  == 'GET':
+        query = request.session['hashtagQuery']
+        print(query)
+    else:
+        return redirect('/')
+    tweetCountData = tweetCount(query)
+    tweetData = hashtagAnalysis(query)
+    sentimentData = sentimentAnalysis(query)
+    return render(request,'tweetAnalysis.html',{"tweetCountData" :tweetCountData,"tweetData":tweetData,"sentimentData":sentimentData })
+
+#Tweet count
+def tweetCount(query):
     tweetCount = api2.get_recent_tweets_count(query)
-    tweetData = []
+    tweetCountData = []
     for tweet in tweetCount.data:
         obj = {}
         obj['end'] = tweet['end']
         obj['count'] = tweet['tweet_count']
-        tweetData.append(obj)
-    tweetData = json.dumps(tweetData)
-    return render(request, 'tweetCount.html', {'tweetData' : tweetData})
+        tweetCountData.append(obj)
+    tweetCountData = json.dumps(tweetCountData)
+    return tweetCountData
 
-
-def targetedAds(request):
-    TWEET =  1266735261012111360
-    users = api2.get_liking_users(TWEET)
-    return render(request,'targetedAds.html', {'users' : users})
-
-def stream(data, file_name):
+#Create Dataframe with api response on serach tweets 
+def stream(data):
         df = pd.DataFrame(columns = ['Tweets' , 'User_name','User_id' , 'User_statuses_count' , 
                             'user_followers' , 'User_location' , 'User_verified' ,
                             'fav_count' , 'rt_count', 'tweet_date','url'] )
 
         i = 0
         # status_count - Total tweets by user
-        # for tweet in tweepy.Cursor(api1.search_tweets, q=data, count=50, lang='en', result_type="popular").items(NO_OF_TERMS):
         for tweet in api1.search_tweets(q=data,count=50,lang='en', result_type="popular"):
-            print(i, end='\r')
             df.loc[i, 'Tweets'] = tweet.text
             df.loc[i, 'User_name'] = tweet.user.name
             df.loc[i, 'User_id'] = tweet.user.screen_name
@@ -86,7 +98,18 @@ def stream(data, file_name):
        
         return df
 
-def sentimentAnalysis(request):
+#Hashtag Analysis
+def hashtagAnalysis(query):
+    df=stream(query)
+    json_records = df.reset_index().to_json(orient ='records',date_format="iso")
+    tweetData = []
+    tweetData = json.loads(json_records)
+    global Filedata
+    Filedata = tweetData
+    return tweetData
+
+#Sentiment Analysis
+def sentimentAnalysis(query):
     polarity = 0
     positive = 0
     wpositive = 0
@@ -97,11 +120,11 @@ def sentimentAnalysis(request):
     neutral = 0
     
     
-#Clean tweet
+    #Clean tweet
     def clean_tweet(tweet):
         return ' '.join(re.sub('(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)', ' ', tweet).split())
 
-#sentiment analysis
+    #Find sentiment 
     def analyze_sentiment(tweet):
         analysis = TextBlob(tweet)
         nonlocal polarity
@@ -135,43 +158,34 @@ def sentimentAnalysis(request):
             neutral +=1
             return 'neutral'
 
-
-#percentage calculation
-    def percentage(part, whole):
-            temp = 100 * float(part) / float(whole)
-            return format(temp, '.2f') 
-    df=stream(data=query, file_name='my_tweets')
-    print(df.head())
+    df=stream(query)
     df['clean_tweet'] = df['Tweets'].apply(lambda x : clean_tweet(x))
     df['Sentiment'] = df['clean_tweet'].apply(lambda x : analyze_sentiment(x) )
-    print(df.tail())
-    print(positive)
+
     #total positive,neutral and negative
     tp=positive+wpositive+spositive
     tn=negative+wnegative+snegative
     n=neutral
-    print("Total positive " + str(tp))
-    print("Total Negative " + str(tn))
-    print("Total Neutral " + str(n))
 
+    #create object for pie-chart
     data = {"totalPositive" : tp,"totalNegative" : tn, "totalNeutral": n, "positive" : positive , "wpositive" : wpositive,"spositive" : spositive,"negative": negative, "wnegative": wnegative, "snegative" : snegative , "neutral" : neutral}
     datalist = [positive,wpositive,spositive,negative,wnegative,snegative,neutral]
-    
-    return render(request,'sentimentAnalysis.html',{'data':data, 'datalist' : datalist})
 
-Filedata = []
-def hashtagAnalysis(request):
-    df=stream(data=query, file_name='my_tweets')
-    # df.to_excel('{}.xlsx'.format('my_tweets'))
-    json_records = df.reset_index().to_json(orient ='records',date_format="iso")
-    data = []
-    data = json.loads(json_records)
-    print(data)
-    global Filedata
-    Filedata = data
-    return render(request,'hashtagAnalysis.html',{'d': data})
+    #convert to percentage 
+    percentageDatalist = []
+    total = sum(datalist)
+    if total != 0:
+        for entry  in datalist:
+            f=(entry/total)*100
+            percentageDatalist.append(f)
+    dataObj ={"data": data,"datalist":percentageDatalist}
+    return dataObj
 
+#Handles Excel sheet download 
 def downloadFile(request):
+
+    query = request.session['hashtagQuery']
+
     # content-type of response
     response = HttpResponse(content_type='application/ms-excel')
 
@@ -182,7 +196,7 @@ def downloadFile(request):
     wb = xlwt.Workbook(encoding='utf-8')
 
     #adding sheet
-    ws = wb.add_sheet("sheet1")
+    ws = wb.add_sheet("sheet1",cell_overwrite_ok=True)
 
     # Sheet header, first row
     row_num = 0
@@ -201,7 +215,7 @@ def downloadFile(request):
     # Sheet body, remaining rows
     font_style = xlwt.XFStyle()
 
-    
+    print(Filedata)
     for my_row in Filedata:
       row_num = row_num + 1
       print(my_row)
@@ -219,34 +233,74 @@ def downloadFile(request):
 
     wb.save(response)
     return response
+
+
     
-
-
-# def interestAnalysis(request):
-#     user = "@Dhiyanesh01"
-#     favList = []
-#     fav = {}
-#     for favorite in tweepy.Cursor(api1.get_favorites,id=user ).items(100):
-#         fav['authorScreenname'] = str(favorite.user.screen_name.encode("utf-8"))
-#         fav['authorName'] = str(favorite.user.name.encode("utf-8"))
-#         fav['tweetId'] = str(favorite.id)
-#         fav['tweetText'] = str(favorite.text.encode("utf-8"))
-#         favList.append(fav)
-#         print(favorite)
-#     print(favList)
-#     return render(request,'interestAnalysis.html',{'favourite': favList} )
-
 def interestAnalysis(request):
-    user = "@Dhiyanesh01"
-    favList = []
-    for favorite in tweepy.Cursor(api1.get_favorites,id=user ).items(100):
-        fav = {}
-        fav['authorScreenname'] = str(favorite.user.screen_name)
-        fav['authorName'] = str(favorite.user.name)
-        fav['tweetId'] = str(favorite.id)
-        fav['tweetText'] = str(favorite.text)
-        favList.append(fav)
-        print(favorite)
-    print(favList)
-    return render(request,'interestAnalysis.html',{'favourite': favList} )
-    
+    if request.method == "POST":
+        user = request.POST['username']
+        tweets=[]
+        s=''
+        def extractor(text):
+            ans=[]
+            sentences = nltk.sent_tokenize(text)
+            for sentence in sentences:
+                words = nltk.word_tokenize(sentence)
+                words = [word for word in words if word not in set(stopwords.words('english'))]
+                tagged = nltk.pos_tag(words)
+                for (word, tag) in tagged:
+                    if tag == 'NNP':
+                        ans.append(word)
+            return ans
+
+        for favorite in tweepy.Cursor(api1.get_favorites,id=user ).items(100):
+            tweet=str(favorite.text)
+            tweets.append(tweet)
+            neat=' '.join(re.sub('(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)', ' ',tweet).split())
+            s=s+neat+'. '
+
+        
+        datalist=extractor(s)
+        datalist = list(filter(('RT').__ne__, datalist))
+        datalist = [i for i in datalist if len(i)!=1 ]
+        datalist = [i for i in datalist  if len(i)!=2 ]
+        datalist = [i for i in datalist if len(i)!=3 ]
+        return render(request,'interestAnalysis.html',{'favourite': datalist} )
+    else:
+        return render(request,'interestAnalysis.html')
+
+
+def targetedAds(request):
+    TWEET =  1266735261012111360
+    if request.method == 'POST':
+        USERNAME = ''
+        targetUserCount = 30
+        USERNAME = request.POST['username']
+        #single tweet
+        users = api2.get_liking_users(TWEET)
+
+        #Last ten tweets from a user
+        res = api2.get_user(username=USERNAME)
+        if(res.data == None):
+            error = res.errors[0]['detail']
+            return render(request,"targetedAds.html", {'error' : error })
+        userId = res.data["id"]
+        
+        tweets = api2.get_users_tweets(userId)
+        targetUsers = []
+        sortedTargetUsers = []
+        for tweet in tweets.data:
+            tweetId = tweet["id"]
+            #Recent most 100 liked users
+            usersData = api2.get_liking_users(tweetId).data
+            if usersData != None :
+                for user in usersData:
+                    targetUsers.append(user.username)
+        targetUsers = [item for items, c in Counter(targetUsers).most_common() for item in [items] * c]
+        sortedTargetUsers = list(OrderedDict.fromkeys(targetUsers))
+        if len(sortedTargetUsers) > 30:
+            sortedTargetUsers = sortedTargetUsers[0: targetUserCount]
+        print(sortedTargetUsers)
+        return render(request,'targetedAds.html', {'users' : users,'targetUsers':sortedTargetUsers })
+    else:
+        return render(request,'targetedAds.html')

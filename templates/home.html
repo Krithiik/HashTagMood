@@ -1,4 +1,82 @@
-{% extends 'main.html' %} {% block content %}
+{% extends 'main.html' %} {% block content %} {% load static %}
+<link rel="stylesheet" type="text/css" href="{% static '/css/Home.css'%}" />
+<div
+  class="jumbotron d-flex flex-column justify-content-center align-items-center"
+>
+  <div id="headingGroup" class="container-fluid text-center mt-5">
+    <h3>
+      Track any hashtag, keyword and fetch historical data as well as sentiment
+    </h3>
+  </div>
+  <div class="form-container d-inline-block">
+    {% include 'hashtagForm.html' %}
+  </div>
+</div>
+<!-- end of jumbotron -->
+<section class="container-fluid px-0 content overflow-hidden">
+  <div class="row align-items-center">
+    <div class="col-md-6 order-2 order-md-1">
+      <img src="/static/images/twitter.jpg" alt="" class="img-fluid" />
+    </div>
+    <div
+      class="col-md-6 mt-5 text-center align-items-center order-1 order-md-2"
+    >
+      <div class="row justify-content-center align-items-center">
+        <div class="col-10 col-lg-8 blurb mb-5 mb-md-0 text-center">
+          <h2>Tweet Analysis</h2>
+          <p class="lead">
+            We provide you with the trend in tweet count on a keyword or hashtag
+            over the time period of last 7 days for each hour variation as a timeline chart. Apart from 
+            this the most recent and popular tweets are provided with their username,
+            a glimpse of the tweet itself and link to that tweet with several other 
+            content. This content is also available to be dowloaded in 
+            excel file. From the recieved tweets the sentiment analysis is also done categorizing 
+            them as postive, negative and neutral tweets in a pie-chart
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row align-items-center">
+    <div class="col-md-6 order-2 order-md-2">
+      <img src="/static/images/tweettweet.jpg" alt="" class="img-fluid" />
+    </div>
+    <div
+      class="col-md-6 mt-5 text-center align-items-center order-1 order-md-1"
+    >
+      <div class="row justify-content-center align-items-center">
+        <div class="col-10 col-lg-8 blurb mb-5 mb-md-0 text-center">
+          <h2>Personal Interest</h2>
+          <p class="lead">
+            From the tweets that the user liked, using Natural language processing,
+            the tweets are categorised into categories and the user's recent 
+            interest domains are shown.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row align-items-center">
+    <div class="col-md-6 order-2 order-md-1">
+      <img src="/static/images/twitter logo.jpg" alt="" class="img-fluid" />
+    </div>
+    <div
+      class="col-md-6 mt-5 text-center align-items-center order-1 order-md-2"
+    >
+      <div class="row justify-content-center align-items-center">
+        <div class="col-10 col-lg-8 blurb mb-5 mb-md-0 text-center">
+          <h2>Targeted ADS</h2>
+          <p class="lead">
+            Given a bussiness account or any account, the last 10 tweets posted by the user 
+            are considered and the users who liked them are analysed and ranked describing their
+            interest in the post posted by the bussiness account. The bussiness admin can use this 
+            report to promote their product directly to those users by using the username and the account
+            link provided from our analysis.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-<h1>Hi this is Home</h1>
-{% include 'hashtagForm.html' %} {% endblock %}
+{% endblock %}
